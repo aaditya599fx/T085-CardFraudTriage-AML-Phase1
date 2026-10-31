@@ -1,0 +1,42 @@
+{
+  "dataset_sha256": "76274b691b16a6c49d3f159c883398e03ccd6d1ee12d9d8ee38f4b4b98551a89",
+  "splits": [
+    {
+      "split": "train",
+      "rows": 170888,
+      "fraud": 360,
+      "legitimate": 170528,
+      "base_rate": 0.002106642947427555,
+      "time_min": 0.0,
+      "time_max": 120396.0,
+      "index_sha256": "4947987dcd9f4384b8f5d10094f3aa18cf24968bc5d328ab3dceb98dfc626605"
+    },
+    {
+      "split": "validation",
+      "rows": 56958,
+      "fraud": 57,
+      "legitimate": 56901,
+      "base_rate": 0.0010007373854419045,
+      "time_min": 120397.0,
+      "time_max": 145248.0,
+      "index_sha256": "951f6c62cfbe7e29489b8a1902e10a7fc0d44cbd8a5782c17cb624cee89b1ff3"
+    },
+    {
+      "split": "test",
+      "rows": 56961,
+      "fraud": 75,
+      "legitimate": 56886,
+      "base_rate": 0.0013166903670932743,
+      "time_min": 145249.0,
+      "time_max": 172792.0,
+      "index_sha256": "bec94b08b4ac9be187304d5508b370f3bc1d8ebfceacfe184219eaac39da8c61"
+    }
+  ],
+  "quality": {
+    "rows": 284807,
+    "columns": 31,
+    "missing_cells": 0,
+    "exact_duplicate_rows": 1081,
+    "duplicate_policy": "Retained; identical Time values stay in one split."
+  }
+}

@@ -1,3 +1,0 @@
-# Initial setup only. Role owners will add reviewed experiment settings.
-seed: 26
-data_path: data/raw/creditcard.csv
