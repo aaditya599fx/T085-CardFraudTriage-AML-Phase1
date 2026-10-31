@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+data/raw/*.csv
+data/raw/*.zip
+data/processed/*.npz
+results/models/*.joblib
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+!data/processed/split_indices.npz
+*.log
+work-presentation-*/

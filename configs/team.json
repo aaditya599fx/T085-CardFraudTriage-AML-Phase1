@@ -1,0 +1,32 @@
+{
+  "team_id": "T085",
+  "section": "E",
+  "project": 26,
+  "roles": [
+    {
+      "role_number": 1,
+      "responsibility": "Data, EDA and splits",
+      "status": "pending integration"
+    },
+    {
+      "role_number": 2,
+      "responsibility": "Preprocessing and feature engineering",
+      "status": "pending integration"
+    },
+    {
+      "role_number": 3,
+      "responsibility": "GMM modeling",
+      "status": "pending integration"
+    },
+    {
+      "role_number": 4,
+      "responsibility": "Evaluation and thresholding",
+      "status": "pending integration"
+    },
+    {
+      "role_number": 5,
+      "responsibility": "Robustness, error analysis and documentation",
+      "status": "pending integration"
+    }
+  ]
+}
