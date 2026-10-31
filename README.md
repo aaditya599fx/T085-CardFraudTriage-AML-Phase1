@@ -55,4 +55,4 @@ guides/                  Scope and individual viva preparation
 
 ## Contribution workflow
 
-Use your own branch and GitHub account. Review, reproduce and adapt the files you own, commit the actual changes, and request another member's review. Coordinate shared configuration and result files to avoid conflicting versions. Do not commit a completed-results claim before the corresponding work has been integrated and checked.
+Use your own branch and GitHub account. Review,reproduce and adapt the files you own, commit the actual changes, and request another member's review. Coordinate shared configuration and result files to avoid conflicting versions. Do not commit a completed-results claim before the corresponding work has been integrated and checked.
