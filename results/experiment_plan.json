@@ -1,0 +1,99 @@
+{
+  "status": "configured",
+  "config": {
+    "seed": 26,
+    "data_path": "data/raw/creditcard.csv",
+    "split_fractions": [
+      0.6,
+      0.2,
+      0.2
+    ],
+    "gmm": {
+      "components": [
+        1,
+        2,
+        4,
+        8,
+        12,
+        16,
+        20
+      ],
+      "covariance_types": [
+        "diag",
+        "full",
+        "tied",
+        "spherical"
+      ],
+      "n_init": 2,
+      "max_iter": 300,
+      "reg_covar": 1e-05,
+      "selection": "bic",
+      "tuning": {
+        "reg_covar": [
+          1e-06,
+          1e-05,
+          0.0001
+        ],
+        "n_init": [
+          1,
+          2,
+          3
+        ],
+        "max_iter": [
+          100,
+          300
+        ]
+      }
+    },
+    "fpr_budgets": [
+      0.001,
+      0.005,
+      0.01,
+      0.05
+    ],
+    "review_fractions": [
+      0.001,
+      0.005,
+      0.01
+    ],
+    "review_counts": [
+      100
+    ],
+    "bootstrap_repetitions": 500,
+    "robustness": {
+      "components": 4,
+      "covariance_types": [
+        "diag",
+        "full",
+        "tied",
+        "spherical"
+      ],
+      "dimensions": [
+        5,
+        10,
+        20,
+        29
+      ],
+      "seeds": [
+        13,
+        26,
+        42
+      ],
+      "train_fractions": [
+        0.1,
+        0.5,
+        1.0
+      ],
+      "n_init": 2,
+      "max_iter": 200,
+      "reg_covar": 1e-05
+    }
+  },
+  "config_sha256": "68323ad5aea335c5c86d4722509cb56fcaa12a79e8e4d52643a64f634bfb86bb",
+  "dataset_sha256": "76274b691b16a6c49d3f159c883398e03ccd6d1ee12d9d8ee38f4b4b98551a89",
+  "split_indices_sha256": "3c069d647e251e07240bbedf3aab9276824c5f04a7e0199158ce902da61c2adc",
+  "selection": "Training-only staged AIC/BIC; validation-only threshold calibration.",
+  "test_reuse": "The test partition was inspected in an earlier experiment; this is follow-up evaluation.",
+  "robustness_split": "Validation only; no test-based tuning.",
+  "robustness_requested": true
+}

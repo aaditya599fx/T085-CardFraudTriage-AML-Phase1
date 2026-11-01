@@ -37,6 +37,6 @@
     "columns": 31,
     "missing_cells": 0,
     "exact_duplicate_rows": 1081,
-    "duplicate_policy": "Retained; identical Time values stay in one split."
+    "duplicate_policy": "Retained; tied timestamps stay in one partition."
   }
 }

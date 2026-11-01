@@ -27,7 +27,7 @@
     "max_iter": 200,
     "reg_covar": 1e-05
   },
-  "seconds": 52.81695033299911,
+  "seconds": 51.22681875000126,
   "trials": 26,
   "evaluation_split": "validation only",
   "selection": "Diagnostic study; no ranking across dimensional spaces by AIC/BIC.",
