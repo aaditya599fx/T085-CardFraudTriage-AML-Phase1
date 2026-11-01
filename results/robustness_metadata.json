@@ -1,0 +1,35 @@
+{
+  "config": {
+    "components": 4,
+    "covariance_types": [
+      "diag",
+      "full",
+      "tied",
+      "spherical"
+    ],
+    "dimensions": [
+      5,
+      10,
+      20,
+      29
+    ],
+    "seeds": [
+      13,
+      26,
+      42
+    ],
+    "train_fractions": [
+      0.1,
+      0.5,
+      1.0
+    ],
+    "n_init": 2,
+    "max_iter": 200,
+    "reg_covar": 1e-05
+  },
+  "seconds": 52.81695033299911,
+  "trials": 26,
+  "evaluation_split": "validation only",
+  "selection": "Diagnostic study; no ranking across dimensional spaces by AIC/BIC.",
+  "training_size_policy": "Nested seeded subsets; full-training preprocessing held fixed to isolate GMM sample-size effects."
+}
