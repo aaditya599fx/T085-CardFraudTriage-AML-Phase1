@@ -1,0 +1,20 @@
+{
+  "components": 20,
+  "covariance": "full",
+  "reg_covar": 1e-06,
+  "n_init": 2,
+  "max_iter": 300,
+  "test_ap": 0.5822028005222633,
+  "test_pr_auc": 0.5786691473427593,
+  "test_ap_ci": [
+    0.4634455417366572,
+    0.712348197465626
+  ],
+  "selected_condition": 17759113.364919897,
+  "primary_candidates": 33,
+  "robustness_trials": 26,
+  "tests": 14,
+  "notebooks": 7,
+  "test_reused": true,
+  "split_rows": 56961
+}
