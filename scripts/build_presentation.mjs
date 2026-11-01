@@ -8,6 +8,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {createRequire} from 'node:module';
+import {spawnSync} from 'node:child_process';
 if(!process.env.RUNTIME_NODE_MODULES||!process.env.PRESENTATION_SKILL_DIR)throw new Error('Set RUNTIME_NODE_MODULES and PRESENTATION_SKILL_DIR to the bundled presentation runtime.');
 const req=createRequire(path.join(process.env.RUNTIME_NODE_MODULES,'package.json'));
 const {Presentation,PresentationFile}=await import(pathToFileURL(req.resolve('@oai/artifact-tool')).href);
@@ -28,8 +29,8 @@ function body(s,lines){lines.forEach((x,i)=>text(s,x,72,175+i*88,1110,75,27));}
 function table(s,values,y=170,width=1136,height=350){const t=s.tables.add({rows:values.length,columns:values[0].length,left:72,top:y,width,height,values});t.borders.assign({fill:'#D9E1E3',width:1,style:'solid'});for(let r=0;r<values.length;r++)for(let c=0;c<values[0].length;c++){const cell=t.getCell(r,c);cell.fill=r===0?'#193543':(r%2?'#FFFFFF':'#EEF2F2');cell.text.style={typeface:'Arial',fontSize:23,color:r===0?'#FFFFFF':'#193543',bold:r===0};}return t;}
 function chart(s,type,config){return s.charts.add(type,{...config,chartFill:'#F7F7F2',plotAreaFill:'#F7F7F2'});}
 const selected=d.gmm_grid.find(x=>x.selected),m=d.metadata;
-let s=slide('Card Fraud Triage','Phase 1 machine learning. Team roles supplied by the team: Gauri data, Farhana preprocessing, Aaditya GMM, Bhumi evaluation, Anshvardhan robustness/documentation. Ownership is not proof of individual authorship. Results in tables and notebooks are reproducible from the original Kaggle CSV.');
-text(s,'Gaussian mixture density scoring',72,178,1120,90,53,'#147D92',true);text(s,'Project 26\nExpanded machine learning evaluation',72,300,1080,100,31);text(s,'Bhumi Rastogi · Aaditya Yadav · Farhana Pervin\nAnshvardhan Badkur · Gauri mishra',72,500,1120,100,27);
+let s=slide('Card Fraud Triage','Phase 1 machine learning. Team roles supplied by the team: Role 1 data, Role 2 preprocessing, Role 3 GMM, Role 4 evaluation, Role 5 robustness/documentation. Ownership is not proof of individual authorship. Results in tables and notebooks are reproducible from the original Kaggle CSV.');
+text(s,'Gaussian mixture density scoring',72,178,1120,90,53,'#147D92',true);text(s,'Project 26\nExpanded machine learning evaluation',72,300,1080,100,31);text(s,'Team T085\nSection E, Project 26',72,500,1120,100,27);
 s=slide('Fraud triage and evaluation scope','Source: original ULB/Kaggle CSV, https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud. The same test partition was inspected in the initial run, so this is follow-up evaluation. Neither validation AP nor test metrics choose the primary GMM.');
 text(s,'492 frauds / 284,807 transactions',72,185,1110,90,48,'#147D92',true);['Training learns legitimate behavior. Scores rank review priority.','AP and review workload measure rare-event triage quality.','The expanded run reuses a previously inspected test partition.','Autoencoder training remains Phase 2.'].forEach((t,i)=>text(s,t,72,320+i*80,1110,65,27));
 s=slide('Frozen chronological membership','Source: results/tables/split_summary.csv and data/processed/split_indices.npz. Boundaries preserve tied Time values. Split membership, dataset checksum and legitimate training membership are verified on loading. Exact duplicates retained; equal Time values cannot span partitions.');
@@ -47,7 +48,7 @@ s=slide('Precision at a fixed review capacity','Source: review_capacity.csv. Top
 s=slide('Validation-only dimensionality study','Source: robustness_trials.csv, study dimensions_covariance. K4, seed26, reg1e-5, two starts, max200. PCA fits only normal training. AIC/BIC are not compared across dimensions. Covariance condition numbers and warnings are recorded separately. No test frame enters robustness.py.');chart(s,'line',{position:{left:72,top:160,width:760,height:420},categories:['5','10','20','29'],series:['diag','full','tied','spherical'].map((cov,i)=>({name:cov,values:d.robustness_trials.filter(x=>x.study==='dimensions_covariance'&&x.covariance===cov).map(x=>x.validation_average_precision),line:{fill:Object.values(colors)[i],width:2},marker:{symbol:'circle',size:6}})),hasLegend:true,legend:{position:'bottom'},xAxis:{title:'Dimensions',textStyle:{fontSize:18}},yAxis:{title:'Validation average precision',min:0,textStyle:{fontSize:18}}});text(s,`${m.robustness_trials} diagnostic fits\n\nDimension changes\nboth information\nand conditioning.\n\nNo test-based tuning`,860,195,350,355,27);
 s=slide('Seed and sample-size sensitivity','Source: seed_summary.csv. Full dimensions and K4 across seeds13,26,42. Training-size runs use nested10%,50%,100% normal subsets with full-training preprocessing held fixed; they isolate GMM fit population size, not an entire-pipeline learning curve. Rank correlations and per-row score SD are supplied.');table(s,[['Covariance','Seeds','Mean validation AP','Sample SD'],...d.seed_summary.map(x=>[x.covariance,String(x.runs),x.validation_ap_mean.toFixed(4),x.validation_ap_std.toFixed(4)])],175,1136,350);text(s,'Nested training subsets: 10%, 50%, 100%.\nConditioning, warnings and score-rank correlations accompany AP.',72,560,1120,75,27);
 s=slide('Post-freeze error analysis','Source: error_group_summary.csv at the0.5% validation FPR policy. Missed-fraud rows, top20 false positives and standardized V-feature deviations are exported. Descriptive group differences are not causal explanations and do not feed back into tuning.');table(s,[['Group','Records','Median amount','Median score'],...d.error_group_summary.map(x=>[x.group,String(x.rows),x.median_amount.toFixed(2),x.median_score.toFixed(2)])],175,1136,350);text(s,'Inspect rare legitimate behavior and normal-looking fraud.\nAnonymized V features limit business interpretation.',72,560,1120,75,27);
-s=slide('Limits and Phase 2 freeze','The test set was inspected in the initial run and reused in this expansion. Fourteen tests and seven notebooks are executed; that does not certify personal contribution or viva readiness. Autoencoder training and hybrid validation remain Phase2.');body(s,['Historical coverage: two days and 75 test frauds.','The test set is reused. The search is bounded and staged.','Three seeds and fixed K=4 limit robustness conclusions.','Freeze split IDs, preprocessing and the evaluation harness.','Phase 2 needs validation choices and justified hybrid ablations.']);
+s=slide('Limits and Phase 2 freeze','The test set was inspected in the initial run and reused in this expansion. Twenty tests and seven notebooks are executed; that does not certify personal contribution or viva readiness. Autoencoder training and hybrid validation remain Phase2.');body(s,['Historical coverage: two days and 75 test frauds.','The test set is reused. The search is bounded and staged.','Three seeds and fixed K=4 limit robustness conclusions.','Freeze split IDs, preprocessing and the evaluation harness.','Phase 2 needs validation choices and justified hybrid ablations.']);
 const candidate=path.join(tmp,'candidate.pptx');const final=path.join(tmp,'output/final.pptx');
 await fs.mkdir(path.dirname(final),{recursive:true});
 await (await PresentationFile.exportPptx(P)).save(candidate);
@@ -55,4 +56,20 @@ const tableOwners=[3,7,9,10,13,14],chartOwners=[6,8,11,12];
 await finalizePresentation({workspaceDir:path.dirname(R),candidatePath:candidate,finalPath:final,pythonExecutable:process.env.RUNTIME_PYTHON,integrityValidatorPath:path.join(S,'container_tools/inspect_presentation_package_integrity.py'),layoutValidatorPath:path.join(S,'container_tools/inspect_presentation_layout_geometry.py'),layoutArgs:['--expected-slide-size-emu','12192000,6858000','--validate-heading-fit',...tableOwners.flatMap(n=>['--require-native-table-slide',String(n)])],requiredNativeTableOwnerSlides:tableOwners,requiredNativeChartOwnerSlides:chartOwners,materializeLiteralChartWorkbooks:true,fontPolicy:{basis:'design',families:['Arial']},verifyArtifactToolImport:true,receiptPath:path.join(tmp,'validation.json')});
 for(let i=0;i<P.slides.items.length;i++){const png=await P.export({slide:P.slides.items[i],format:'png',scale:1});await fs.writeFile(path.join(tmp,`slide-${String(i+1).padStart(2,'0')}.png`),new Uint8Array(await png.arrayBuffer()));}
 await fs.copyFile(final,path.join(R,'docs/T085_Phase1.pptx'));
+const pdfCode=`from pathlib import Path
+import sys
+from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
+images=sorted(Path(sys.argv[1]).glob('slide-*.png'))
+if len(images)!=15: raise SystemExit('Expected fifteen rendered slides before PDF export.')
+c=canvas.Canvas(sys.argv[2],pagesize=(960,540))
+c.setTitle('Team T085 - Card Fraud Triage - Phase 1')
+c.setAuthor('Team T085')
+for p in images:
+    c.drawImage(ImageReader(str(p)),0,0,width=960,height=540)
+    c.showPage()
+c.save()
+`;
+const pdf=spawnSync(process.env.RUNTIME_PYTHON,['-c',pdfCode,tmp,path.join(R,'docs/T085_Phase1.pdf')],{encoding:'utf8'});
+if(pdf.status!==0)throw new Error(`Slide PDF export failed: ${pdf.stderr}`);
 console.log('Exported and validated',P.slides.items.length,'editable slides. Previews:',tmp);

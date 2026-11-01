@@ -5,6 +5,7 @@ select or evaluate a model. It only consumes saved tables and fills report text.
 """
 from pathlib import Path
 import json
+import ast
 import math
 import re
 import pandas as pd
@@ -40,15 +41,15 @@ def main():
         test_ap=float(test.loc['gmm','average_precision']),test_pr_auc=float(test.loc['gmm','pr_auc_trapezoidal']),
         test_ap_ci=[float(test.loc['gmm','ap_ci_lower']),float(test.loc['gmm','ap_ci_upper'])],
         selected_condition=cond,primary_candidates=len(grid),robustness_trials=len(rob),
-        tests=14,notebooks=7,test_reused=True,split_rows=56961)
+        tests=sum(isinstance(node,(ast.FunctionDef,ast.AsyncFunctionDef)) and node.name.startswith('test_') for path in (R/'tests').glob('test_*.py') for node in ast.walk(ast.parse(path.read_text()))),notebooks=7,test_reused=True,split_rows=56961)
     put('results/submission_summary.json',json.dumps(result,indent=2))
-    roles='''| Role | Member | Responsibility |
-|---|---|---|
-| 1 | Gauri mishra | Data, training EDA and saved chronological splits |
-| 2 | Farhana Pervin | Preprocessing, feature decisions and PCA |
-| 3 | Aaditya Yadav | GMM selection and integration |
-| 4 | Bhumi Rastogi | Metrics, threshold calibration and review capacity |
-| 5 | Anshvardhan Badkur | Robustness, error analysis and final narrative |'''
+    roles='''| Role | Responsibility |
+|---|---|
+| 1 | Data, training EDA and saved chronological splits |
+| 2 | Preprocessing, feature decisions and PCA |
+| 3 | GMM selection and integration |
+| 4 | Metrics, threshold calibration and review capacity |
+| 5 | Robustness, error analysis and final narrative |'''
     put('README.md',f'''# Card Fraud Triage: GMM Density Scoring vs Autoencoder Anomaly Detector
 
 **Team T085 · Section E · Project 26 · Phase 1: Machine Learning**
@@ -64,12 +65,14 @@ pip install -r requirements.txt
 # Download the original ULB/Kaggle creditcard.csv into data/raw/
 python run_all.py
 python -m unittest discover -s tests -v
+python scripts/verify_outputs.py
+python scripts/verify_submission.py
 jupyter lab
 ```
 
 Dataset: [ULB/Kaggle Credit Card Fraud Detection](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud). Original CSV: 284,807 rows, 492 frauds, no missing values. The CSV and fitted joblib models are excluded from Git. `results/models/README.md` documents regeneration. An external CSV path works with `python run_all.py --data /absolute/path/creditcard.csv`.
 
-The default command executes the full project. `--skip-robustness` is only a quick rerun. Saved split indices are reused and checked against the dataset checksum, configured fractions, chronology and legitimate training membership. Mismatches fail instead of silently changing the experiment.
+The default command executes the full project. The final integration was also run on the original dataset in this official repository; current provenance is saved under `results/`. `--skip-robustness` is only a quick rerun. Saved split indices are reused and checked against the dataset checksum, configured fractions, chronology and legitimate training membership. Mismatches fail instead of silently changing the experiment.
 
 ## Team responsibilities
 
@@ -82,7 +85,7 @@ Assignments are ownership and review responsibilities. Actual personal contribut
 ```text
 configs/                 Fixed experiment configuration and team metadata
 src/                     Data, preprocessing, GMM, baselines, metrics, robustness, error analysis
-tests/                   Fourteen protocol and behavior checks
+tests/                   {result["tests"]} protocol, model and integration checks
 notebooks/               Seven executed notebooks, including an assembled Phase 1 summary
 data/processed/          Frozen split indices, dataset checksum and split manifest
 results/figures/         EDA, model selection, validation/test PR, sensitivity and error plots
@@ -92,7 +95,7 @@ results/models/          Model regeneration guide; fitted binaries remain local
 docs/                    Protocols, data card, audit, editable presentation and PDF
 reports/                 Literature, robustness, error analysis and compiled IEEE report
 reports/ieee_report/     Compilable IEEEtran source and referenced figures
-scripts/                 Narrative/table synchronization and report rebuilding
+scripts/                 Reproduction, verification and report/presentation rebuilding
 guides/                  Phase 1 checklist and viva preparation
 run_all.py               Complete reproducible experiment
 ```
@@ -108,7 +111,7 @@ run_all.py               Complete reproducible experiment
 - Robustness uses validation only: dimensions 5/10/20/29, all four covariance types, three seeds and nested 10%/50%/100% training subsets at fixed K=4. Raw AIC/BIC are not compared across dimensional spaces or different fitting populations.
 - Post-freeze error analysis describes missed frauds, top false positives and review workload. It does not retune the model.
 
-**Test reuse disclosure:** this is an expanded follow-up to the original Phase 1 run. The same test partition was already inspected. Model selection still uses training BIC, robustness uses validation, and thresholds freeze before the current test computation, but these results are not a fresh independent holdout. The initial run is preserved in Git history at commit `753087b`.
+**Test reuse disclosure:** this is an expanded follow-up to the original Phase 1 run. The same test partition was already inspected. Model selection still uses training BIC, robustness uses validation, and thresholds freeze before the current test computation, but these results are not a fresh independent holdout. Earlier exploratory results are not treated as a new independent test set; the official run provenance is recorded in `results/experiment_plan.json` and `results/run_metadata.json`.
 
 ## Recorded results
 
@@ -136,9 +139,10 @@ The separate top-0.5% capacity policy reviews {int(cap.k)} records and catches {
 python scripts/update_deliverables.py
 python scripts/build_report.py
 tectonic reports/ieee_report/main.tex
+python scripts/package_report.py
 ```
 
-Copy the compiled `main.pdf` to `reports/T085_Phase1_IEEE_Report.pdf` for submission. `scripts/build_presentation.mjs` recreates the editable deck with the bundled Artifact Tool runtime described in its header. Presentation charts also remain manually editable. Re-run and inspect all exported artifacts after changing results.
+The packaging command copies the compiled PDF to the submission path and rebuilds the matching Overleaf archive. After all artifact/source changes, run `python scripts/record_source_manifest.py` and both verification commands above. `scripts/build_presentation.mjs` recreates the editable deck and matching PDF using the bundled runtime described in its header. Presentation charts also remain manually editable. Re-run and inspect all exported artifacts after changing results.
 
 ## Limitations
 
@@ -295,8 +299,9 @@ The source separates data, preprocessing, GMM, baselines, metrics, robustness an
 
 The dataset checksum, chronological indices, legitimate training membership and partition index checksums are persisted. Loading refuses a different dataset, changed fractions, invalid membership or altered chronology. The complete preprocessing pipeline, scaler and study PCA objects are saved locally. Model files are excluded from Git; their regeneration guide remains visible in results/models.
 
-Fourteen automated checks cover chronology, ties, normal-only scaling, pipeline reuse, split provenance/tampering, all covariance forms, logged fit failure, staged selection and metric identities. Package versions, configuration hashes and the test-reuse disclosure are saved. Team responsibilities follow the supplied five-role assignment; actual personal contributions need independent review evidence rather than inferred attribution.
+{result["tests"]} automated checks cover chronology, ties, normal-only scaling, pipeline reuse, split provenance/tampering, all covariance forms, logged fit failure, staged selection and metric identities. Package versions, configuration hashes and the test-reuse disclosure are saved. Team responsibilities follow the supplied five-role assignment; actual personal contributions need independent review evidence rather than inferred attribution.
 '''
+    reproducibility=reproducibility.replace('{result["tests"]}',str(result['tests']))
     s=section(s,'\\section{Reproducibility and Validation}','\\section{Limitations and Phase 2 Plan}',reproducibility)
     robust=f'''\\section{{Robustness and Error Analysis}}
 The validation-only module performs {len(rob)} fits. It crosses dimensions 5,10,20,29 with four covariance types at K=4, then repeats full-dimensional covariance settings across seeds 13,26,42 and evaluates nested training subsets. Preprocessing fits only legitimate training rows. No test frame is accepted by this module.
@@ -341,7 +346,7 @@ The expanded Phase 1 study combines train-only GMM selection with explicit valid
     tex.write_text(s)
     put('guides/VIVA_GUIDE.md',f'''# Team T085: viva preparation
 
-All members should understand the complete protocol as well as their assigned role. Role 1 Gauri: data/splits. Role 2 Farhana: preprocessing. Role 3 Aaditya: GMM. Role 4 Bhumi: metrics. Role 5 Anshvardhan: robustness, error analysis and integration narrative.
+All members should understand the complete protocol as well as their assigned role. Role 1: data/splits. Role 2: preprocessing. Role 3: GMM. Role 4: metrics. Role 5: robustness, error analysis and integration narrative.
 
 ## Core explanations
 
@@ -365,7 +370,7 @@ All members should understand the complete protocol as well as their assigned ro
 18. **What do seed metrics show?** AP mean/sample SD measure metric variation. Spearman correlations measure ranking agreement. Per-row raw score SD measures scale-sensitive score variation. Three seeds and 57 validation frauds limit conclusions.
 19. **What does error analysis establish?** It describes missed frauds, high-score legitimate alerts, group amounts/times and standardized feature deviations after the freeze. It cannot identify causes from anonymized features and does not retune the model. At the default error policy there are {point.fp/point.tp:.2f} false positives per caught fraud.
 20. **Is test evaluation independent?** The initial run already inspected this test partition. The expansion keeps train-only selection and validation-only diagnostics but reports test reuse. It must not be described as a fresh untouched holdout.
-21. **What does the bootstrap interval mean?** GMM AP interval={test.loc['gmm','ap_ci_lower']:.4f}-{test.loc['gmm','ap_ci_upper']:.4f} from500 stratified resamples. It conditions on observed prevalence and omits refitting and temporal dependence. It is not a paired superiority test.
+21. **What does the bootstrap interval mean?** GMM AP interval={test.loc['gmm','ap_ci_lower']:.4f}-{test.loc['gmm','ap_ci_upper']:.4f} from 500 stratified resamples. It conditions on observed prevalence and omits refitting and temporal dependence. It is not a paired superiority test.
 22. **What is left for Phase 2?** Fit an undercomplete/denoising autoencoder on exactly the same normal training membership and preprocessing. Select neural settings on validation, reuse the metrics harness, disclose test reuse and justify any hybrid using ablation evidence.
 
 ## Demonstration sequence
