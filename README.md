@@ -106,3 +106,7 @@ The packaging command copies the compiled PDF to the submission path and rebuild
 Only two historical days and 75 test frauds limit generalization. Exact duplicates are retained because transaction IDs are absent. AIC/BIC optimize density fit, not fraud recall. This is a bounded staged search, not a global optimum. Robustness studies use fixed K=4 and evaluate validation quality; they are not a comprehensive architecture search. Continuous density is not a fraud posterior. AP intervals condition on observed class counts and omit temporal dependence and refitting uncertainty. Test reuse must be disclosed in Phase 2.
 
 Scope follows the faculty [Phase 1 instructions](https://docs.google.com/document/d/1ZBr-3LoIEFzXz1pxziGqxSVewOAI3sacAzXRaHxtF_Q/edit). Literature citations are in the report and literature review.
+
+### Automated public checks
+
+The [Phase 1 workflow](../../actions/workflows/phase1-checks.yml) runs unit/integration tests and checks the committed report, notebooks, presentation and provenance without the raw dataset. Full numerical reproduction uses the original Kaggle CSV locally.

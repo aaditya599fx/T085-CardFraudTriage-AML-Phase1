@@ -17,6 +17,10 @@ Verified on 1 November 2026 against the public official repository, after mergin
 - Source/configuration hashes are recorded in results/source_manifest.json and checked by scripts/verify_submission.py.
 - The repository is public; anonymous URL access and the pushed branch are checked after upload. Raw CSV and serialized joblib files remain excluded from Git.
 
+## Public workflow
+
+GitHub Actions runs the 20 protocol/integration tests and the dataset-free submission artifact checker on pushes and pull requests. The full experiment requires the original Kaggle CSV and is verified locally rather than downloading it in CI. The first remote workflow outcome is checked after pushing.
+
 ## Recorded findings
 
 The selected GMM has 20 full-covariance components and reg_covar=1e-6. Test AP is 0.5822 and trapezoidal PR area is 0.5787. At the 0.5% validation FPR policy, TP=57, FP=175, FN=18 and TN=56,711, giving 76% recall, 24.57% precision and 0.308% realized test FPR. All narrative values come from the final run's CSV outputs.
