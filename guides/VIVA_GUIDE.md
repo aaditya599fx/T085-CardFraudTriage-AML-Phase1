@@ -1,6 +1,6 @@
 # Team T085: viva preparation
 
-All members should understand the complete protocol as well as their assigned role. Role 1 Gauri: data/splits. Role 2 Farhana: preprocessing. Role 3 Aaditya: GMM. Role 4 Bhumi: metrics. Role 5 Anshvardhan: robustness, error analysis and integration narrative.
+All members should understand the complete protocol as well as their assigned role. Role 1: data/splits. Role 2: preprocessing. Role 3: GMM. Role 4: metrics. Role 5: robustness, error analysis and integration narrative.
 
 ## Core explanations
 
@@ -24,7 +24,7 @@ All members should understand the complete protocol as well as their assigned ro
 18. **What do seed metrics show?** AP mean/sample SD measure metric variation. Spearman correlations measure ranking agreement. Per-row raw score SD measures scale-sensitive score variation. Three seeds and 57 validation frauds limit conclusions.
 19. **What does error analysis establish?** It describes missed frauds, high-score legitimate alerts, group amounts/times and standardized feature deviations after the freeze. It cannot identify causes from anonymized features and does not retune the model. At the default error policy there are 3.07 false positives per caught fraud.
 20. **Is test evaluation independent?** The initial run already inspected this test partition. The expansion keeps train-only selection and validation-only diagnostics but reports test reuse. It must not be described as a fresh untouched holdout.
-21. **What does the bootstrap interval mean?** GMM AP interval=0.4634-0.7123 from500 stratified resamples. It conditions on observed prevalence and omits refitting and temporal dependence. It is not a paired superiority test.
+21. **What does the bootstrap interval mean?** GMM AP interval=0.4634-0.7123 from 500 stratified resamples. It conditions on observed prevalence and omits refitting and temporal dependence. It is not a paired superiority test.
 22. **What is left for Phase 2?** Fit an undercomplete/denoising autoencoder on exactly the same normal training membership and preprocessing. Select neural settings on validation, reuse the metrics harness, disclose test reuse and justify any hybrid using ablation evidence.
 
 ## Demonstration sequence

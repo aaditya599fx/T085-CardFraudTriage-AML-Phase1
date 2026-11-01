@@ -1,6 +1,6 @@
 # Expanded Phase 1 experiment protocol
 
-The first Phase 1 results used an eight-candidate GMM search and were already inspected. This expansion preserves the original chronological membership. It is a follow-up analysis on a previously inspected test partition, not a fresh independent holdout. The initial experiment is recoverable from Git commit 753087b.
+The first Phase 1 results used an eight-candidate GMM search and were already inspected. This expansion preserves the original chronological membership. It is a follow-up analysis on a previously inspected test partition, not a fresh independent holdout. The test partition was inspected before this official integration run; the current configuration and successful run are identified by the provenance records under results/.
 
 The configuration is fixed in `configs/config.yaml` before the expanded experiment starts and its SHA-256 is saved in `results/experiment_plan.json`.
 

@@ -6,27 +6,27 @@
     {
       "role_number": 1,
       "responsibility": "Data, EDA and splits",
-      "status": "pending integration"
+      "status": "integrated and verified"
     },
     {
       "role_number": 2,
       "responsibility": "Preprocessing and feature engineering",
-      "status": "pending integration"
+      "status": "integrated and verified"
     },
     {
       "role_number": 3,
       "responsibility": "GMM modeling",
-      "status": "pending integration"
+      "status": "integrated and verified"
     },
     {
       "role_number": 4,
       "responsibility": "Evaluation and thresholding",
-      "status": "pending integration"
+      "status": "integrated and verified"
     },
     {
       "role_number": 5,
       "responsibility": "Robustness, error analysis and documentation",
-      "status": "pending integration"
+      "status": "integrated and verified"
     }
   ]
 }

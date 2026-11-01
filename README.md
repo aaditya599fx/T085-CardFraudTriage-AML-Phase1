@@ -13,22 +13,24 @@ pip install -r requirements.txt
 # Download the original ULB/Kaggle creditcard.csv into data/raw/
 python run_all.py
 python -m unittest discover -s tests -v
+python scripts/verify_outputs.py
+python scripts/verify_submission.py
 jupyter lab
 ```
 
 Dataset: [ULB/Kaggle Credit Card Fraud Detection](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud). Original CSV: 284,807 rows, 492 frauds, no missing values. The CSV and fitted joblib models are excluded from Git. `results/models/README.md` documents regeneration. An external CSV path works with `python run_all.py --data /absolute/path/creditcard.csv`.
 
-The default command executes the full project. `--skip-robustness` is only a quick rerun. Saved split indices are reused and checked against the dataset checksum, configured fractions, chronology and legitimate training membership. Mismatches fail instead of silently changing the experiment.
+The default command executes the full project. The final integration was also run on the original dataset in this official repository; current provenance is saved under `results/`. `--skip-robustness` is only a quick rerun. Saved split indices are reused and checked against the dataset checksum, configured fractions, chronology and legitimate training membership. Mismatches fail instead of silently changing the experiment.
 
 ## Team responsibilities
 
-| Role | Member | Responsibility |
-|---|---|---|
-| 1 | Gauri mishra | Data, training EDA and saved chronological splits |
-| 2 | Farhana Pervin | Preprocessing, feature decisions and PCA |
-| 3 | Aaditya Yadav | GMM selection and integration |
-| 4 | Bhumi Rastogi | Metrics, threshold calibration and review capacity |
-| 5 | Anshvardhan Badkur | Robustness, error analysis and final narrative |
+| Role | Responsibility |
+|---|---|
+| 1 | Data, training EDA and saved chronological splits |
+| 2 | Preprocessing, feature decisions and PCA |
+| 3 | GMM selection and integration |
+| 4 | Metrics, threshold calibration and review capacity |
+| 5 | Robustness, error analysis and final narrative |
 
 Assignments are ownership and review responsibilities. Actual personal contributions require real commit/review evidence in `CONTRIBUTIONS.md`.
 
@@ -37,7 +39,7 @@ Assignments are ownership and review responsibilities. Actual personal contribut
 ```text
 configs/                 Fixed experiment configuration and team metadata
 src/                     Data, preprocessing, GMM, baselines, metrics, robustness, error analysis
-tests/                   Fourteen protocol and behavior checks
+tests/                   20 protocol, model and integration checks
 notebooks/               Seven executed notebooks, including an assembled Phase 1 summary
 data/processed/          Frozen split indices, dataset checksum and split manifest
 results/figures/         EDA, model selection, validation/test PR, sensitivity and error plots
@@ -47,7 +49,7 @@ results/models/          Model regeneration guide; fitted binaries remain local
 docs/                    Protocols, data card, audit, editable presentation and PDF
 reports/                 Literature, robustness, error analysis and compiled IEEE report
 reports/ieee_report/     Compilable IEEEtran source and referenced figures
-scripts/                 Narrative/table synchronization and report rebuilding
+scripts/                 Reproduction, verification and report/presentation rebuilding
 guides/                  Phase 1 checklist and viva preparation
 run_all.py               Complete reproducible experiment
 ```
@@ -63,7 +65,7 @@ run_all.py               Complete reproducible experiment
 - Robustness uses validation only: dimensions 5/10/20/29, all four covariance types, three seeds and nested 10%/50%/100% training subsets at fixed K=4. Raw AIC/BIC are not compared across dimensional spaces or different fitting populations.
 - Post-freeze error analysis describes missed frauds, top false positives and review workload. It does not retune the model.
 
-**Test reuse disclosure:** this is an expanded follow-up to the original Phase 1 run. The same test partition was already inspected. Model selection still uses training BIC, robustness uses validation, and thresholds freeze before the current test computation, but these results are not a fresh independent holdout. The initial run is preserved in Git history at commit `753087b`.
+**Test reuse disclosure:** this is an expanded follow-up to the original Phase 1 run. The same test partition was already inspected. Model selection still uses training BIC, robustness uses validation, and thresholds freeze before the current test computation, but these results are not a fresh independent holdout. Earlier exploratory results are not treated as a new independent test set; the official run provenance is recorded in `results/experiment_plan.json` and `results/run_metadata.json`.
 
 ## Recorded results
 
@@ -94,9 +96,10 @@ The separate top-0.5% capacity policy reviews 284 records and catches 57 frauds,
 python scripts/update_deliverables.py
 python scripts/build_report.py
 tectonic reports/ieee_report/main.tex
+python scripts/package_report.py
 ```
 
-Copy the compiled `main.pdf` to `reports/T085_Phase1_IEEE_Report.pdf` for submission. `scripts/build_presentation.mjs` recreates the editable deck with the bundled Artifact Tool runtime described in its header. Presentation charts also remain manually editable. Re-run and inspect all exported artifacts after changing results.
+The packaging command copies the compiled PDF to the submission path and rebuilds the matching Overleaf archive. After all artifact/source changes, run `python scripts/record_source_manifest.py` and both verification commands above. `scripts/build_presentation.mjs` recreates the editable deck and matching PDF using the bundled runtime described in its header. Presentation charts also remain manually editable. Re-run and inspect all exported artifacts after changing results.
 
 ## Limitations
 

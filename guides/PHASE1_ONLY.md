@@ -20,6 +20,8 @@ A successful default `python run_all.py` executes the complete experiment. `--sk
 
 The original mixed-test set was already inspected before the expansion. The report discloses test reuse. Train-only model selection and validation-only robustness help preserve the protocol, but do not create a new independent holdout.
 
-Before submission, each member should review their assigned work, record actual contribution evidence, prepare for individual viva and verify faculty access to the private repository. Those personal/administrative steps cannot be certified by automated execution.
+Before submission, each member should review their assigned work, record actual contribution evidence, prepare for individual viva and verify anonymous access to the public official repository. Those personal/administrative steps cannot be certified by automated execution.
 
 Phase 2 must reuse the frozen split membership, preprocessing, feature order and evaluation harness. Predetermine neural choices using validation and disclose test reuse. A hybrid needs an appropriate rationale and ablation evidence.
+
+Final automated checks also include `python scripts/verify_outputs.py` for numerical contracts and `python scripts/verify_submission.py` for artifact paths, notebook execution, source hashes and matching report/archive versions.
