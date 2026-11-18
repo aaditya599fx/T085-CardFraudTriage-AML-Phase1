@@ -1,20 +1,198 @@
-import pptxgen from '/Users/aad1tyayadav/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/pptxgenjs/dist/pptxgen.cjs.js';
-const pptx=new pptxgen();pptx.layout='LAYOUT_WIDE';pptx.author='Team T085';pptx.subject='Phase 2 card fraud triage';pptx.title='Card Fraud Triage: Phase 2';
-const slides=[
-['Card Fraud Triage | Phase 2','Team T085 - Section E\nDenoising autoencoder compared with the frozen GMM'],
-['Question','Can nonlinear reconstruction rank fraud better than the Phase 1 density model?'],
-['Same data, fair comparison','Original ULB/Kaggle dataset: 284,807 rows, 492 frauds\nChronological frozen split: 170,528 legitimate training rows\nValidation: 57 frauds; test: 75 frauds'],
-['Input preparation','V1-V28 plus log(1+Amount): 29 features\nScaler fitted only on legitimate training rows\nTime orders the split; Class is excluded from model inputs'],
-['Autoencoder design','29 → 16 → 8 → 16 → 29 neural network\nNoise standard deviation: 0.05; target: clean legitimate input\nAnomaly score: mean squared reconstruction error'],
-['Training and selection','Adam, 512-row batches, seed 26\nUp to 35 epochs; 10% legitimate-only early-stop reserve\nMaximum epoch limit reached: convergence is not claimed'],
-['Frozen GMM reference','20 full-covariance components\nAnomaly score: negative log density\nLoad Phase 1 scores on exactly the same validation and test rows'],
-['Primary ranking result','Test average precision\nGMM: 0.5822\nAutoencoder: 0.0908\nTest fraud prevalence: 0.00132'],
-['Precision-recall curve','Both models scored on the same 56,961 test transactions'],
-['At the validation FPR budget','0.5% validation false-positive budget\nGMM: 57/75 frauds; 175 false alerts; 76% recall\nAutoencoder: 27/75 frauds; 135 false alerts; 36% recall'],
-['At fixed review capacity','Top 0.5% = 284 test transactions reviewed\nGMM catches 57 frauds; precision 20.07%\nAutoencoder catches 33; precision 11.62%'],
-['What the result means','The tested autoencoder ranks fraud less effectively than GMM\nROC AUC alone hides the rare-event review burden\nOne neural configuration does not settle all architectures'],
-['Limitations','Only two historical days and 75 test frauds\nAnonymized features limit explanations\nNeural training reached its epoch cap\nTest partition had already been inspected in Phase 1'],
-['Conclusion','Use AP, recall, precision and workload for fraud triage\nThe frozen GMM leads this tested comparison\nFurther neural tuning needs a predetermined validation-only protocol']
-];
-for(let i=0;i<slides.length;i++){let sl=pptx.addSlide();sl.background={color:'F7F8F5'};sl.addText(slides[i][0],{x:.65,y:.48,w:12,h:.72,fontFace:'Aptos Display',fontSize:30,bold:true,color:'147A89'});sl.addShape(pptx.ShapeType.line,{x:.68,y:1.35,w:11.95,h:0,line:{color:'147A89',width:2}});sl.addText(slides[i][1],{x:.8,y:1.75,w:11.7,h:4.8,fontFace:'Aptos',fontSize:i===0?27:24,color:'1B3542',breakLine:false,margin:0,paraSpaceAfterPt:17});if(i===8)sl.addImage({path:'results/phase2/test_pr_curve.png',x:6.2,y:2.15,w:6.1,h:4.2});sl.addText(`T085  |  Phase 2  |  ${i+1}`,{x:.65,y:7.1,w:4,h:.2,fontSize:10,color:'617A84'});}
-await pptx.writeFile({fileName:'docs/phase2/T085_Phase2.pptx'});
+import fs from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const require = createRequire(import.meta.url);
+const PptxGenJS = require('pptxgenjs');
+const JSZip = require('jszip');
+const root = fileURLToPath(new URL('../', import.meta.url));
+const study = path.join(root, 'results/phase2/study');
+const destination = process.argv[2] ?? path.join(root, 'docs/phase2/T085_Phase2.pptx');
+
+async function records(file) {
+  const text = (await fs.readFile(path.join(study, file), 'utf8')).trim();
+  const [header, ...lines] = text.split(/\r?\n/);
+  const keys = header.split(',');
+  return lines.map((line) => {
+    const quoted = /^"([^"]+)",(.*)$/.exec(line);
+    const values = quoted ? [quoted[1], ...quoted[2].split(',')] : line.split(',');
+    return Object.fromEntries(keys.map((key, index) => [key, values[index]]));
+  });
+}
+
+const [ranking, operating, capacity, ablation] = await Promise.all([
+  records('ranking.csv'), records('operating_points.csv'),
+  records('capacity.csv'), records('ablation_summary.csv'),
+]);
+
+const pptx = new PptxGenJS();
+pptx.layout = 'LAYOUT_WIDE';
+pptx.author = 'Team T085';
+pptx.subject = 'Project 26, Phase 2 card fraud triage';
+pptx.title = 'Card fraud triage';
+
+const colors = { paper: 'F7F8F5', accent: '147A89', ink: '1B3542', foot: '526C75', white: 'FFFFFF', stripe: 'EAF1EF' };
+const percent = (value, digits = 1) => (100 * Number(value)).toFixed(digits) + '%';
+const decimal = (value) => Number(value).toFixed(4);
+
+function text(slide, value, x, y, w, h, options = {}) {
+  slide.addText(value, { x, y, w, h, fontFace: 'Aptos', fontSize: 22,
+    color: colors.ink, margin: 0, valign: 'mid', ...options });
+}
+
+function page(title) {
+  const slide = pptx.addSlide();
+  slide.background = { color: colors.paper };
+  text(slide, title, 0.7, 0.46, 11.95, 0.67,
+    { fontFace: 'Aptos Display', fontSize: 31, bold: true, color: colors.accent });
+  slide.addShape(pptx.ShapeType.line, { x: 0.7, y: 1.34, w: 11.95, h: 0,
+    line: { color: colors.accent, width: 1.35 } });
+  text(slide, 'T085  /  Phase 2  /  ' + pptx.slides.length, 0.7, 7.12, 4, 0.17,
+    { fontSize: 10, color: colors.foot });
+  return slide;
+}
+
+function lines(slide, copy, { x = 0.75, y = 1.78, w = 11.8, step = 0.75, fontSize = 23 } = {}) {
+  copy.forEach((line, i) => text(slide, line, x, y + step * i, w, step - 0.08, { fontSize }));
+}
+
+function table(slide, headers, rows, widths, y = 1.72, fontSize = 17) {
+  const header = headers.map((value) => ({ text: value,
+    options: { bold: true, fill: colors.accent, color: colors.white } }));
+  const body = rows.map((row, number) => row.map((value) => ({ text: String(value),
+    options: { fill: number % 2 ? colors.stripe : colors.white } })));
+  slide.addTable([header, ...body], { x: 0.75, y, colW: widths, rowH: 0.53,
+    fontSize, fontFace: 'Aptos', color: colors.ink, margin: 0.09, autoPage: false,
+    border: { type: 'solid', color: 'D5E1E0', pt: 0.6 }, valign: 'mid' });
+}
+
+async function chartImage(slide, filename, x, y, w, h) {
+  const source = path.join(study, filename);
+  const png = await fs.readFile(source);
+  const aspect = png.readUInt32BE(16) / png.readUInt32BE(20);
+  const width = Math.min(w, h * aspect);
+  const height = width / aspect;
+  slide.addImage({ path: source, x: x + (w - width) / 2, y: y + (h - height) / 2,
+    w: width, h: height });
+}
+
+const subset = (group, model) => group.find((row) => row.model === model);
+const testRanking = ranking.filter((row) => row.split === 'test');
+const testOperating = operating.filter((row) => row.split === 'test');
+const testCapacity = capacity.filter((row) => row.split === 'test');
+
+let slide = page('Card fraud triage');
+text(slide, 'Gaussian mixture and denoising autoencoder', 0.75, 2.28, 11.75, 0.7,
+  { fontSize: 35, bold: true });
+text(slide, 'Team T085  /  Section E  /  Project 26', 0.75, 3.43, 11.55, 0.4,
+  { fontSize: 22 });
+
+slide = page('Fraud ranking under a review budget');
+lines(slide, ['Which score puts more fraud near the front of the review queue?',
+  'Compare both models on matching chronological splits.',
+  'The historical test split had already been inspected in Phase 1.']);
+slide.addNotes('Topic 26 asks for a chronological, legitimate-only anomaly detection comparison and an untouched mixed test set. The historical score evaluation uses the same inspected rows.');
+
+slide = page('Chronological dataset partitions');
+table(slide, ['Partition', 'Transactions', 'Frauds', 'Fraud rate'], [
+  ['Train', '170,888', 360, '0.2107%'], ['Validation', '56,958', 57, '0.1001%'],
+  ['Historical test', '56,961', 75, '0.1317%'],
+], [3.15, 3, 2.55, 3.1]);
+lines(slide, ['Both original pipelines start from 170,528 legitimate training rows.'], { y: 4.28 });
+slide.addNotes('Data source: ULB Machine Learning Group, Credit Card Fraud Detection, https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud');
+
+slide = page('Features and anomaly scores');
+lines(slide, ['29 standardized inputs from V1–V28 and log(1 + Amount).',
+  'Time orders the split. Class identifies legitimate rows and supports evaluation.',
+  'GMM ranks by negative log density from 20 full-covariance components.',
+  'The autoencoder ranks by mean squared reconstruction error.'], { step: 0.83 });
+
+slide = page('Original autoencoder architecture');
+text(slide, '29 inputs   ·   16 hidden   ·   8 latent   ·   16 hidden   ·   29 outputs',
+  0.75, 1.82, 11.83, 0.61, { fontSize: 25, bold: true });
+lines(slide, ['ReLU hidden units learn nonlinear structure. The linear output reconstructs signed inputs.',
+  'Train against clean inputs with Gaussian noise of standard deviation 0.05.',
+  'Adam uses batches of 512. The original run reached the 35-epoch cap.'],
+  { y: 2.72, step: 0.88, fontSize: 20 });
+
+slide = page('Checkpoint selection');
+text(slide, 'Original autoencoder', 0.75, 1.82, 5.4, 0.42, { bold: true });
+text(slide, 'Controlled ablations', 6.8, 1.82, 5.68, 0.42, { bold: true });
+lines(slide, ['Random legitimate reserve', 'Fixed noisy input', 'Internal validation R²'],
+  { x: 0.75, y: 2.46, w: 5.4, step: 0.7, fontSize: 20 });
+lines(slide, ['Shared chronological legitimate reserve', 'Fresh corruption per epoch', 'Lowest clean reserve MSE'],
+  { x: 6.8, y: 2.46, w: 5.7, step: 0.7, fontSize: 20 });
+slide.addNotes('Scikit-learn documents the original internal early-stopping metric as validation R². https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html');
+
+slide = page('Review policies');
+lines(slide, ['Threshold policies cap false alerts on legitimate validation rows.',
+  'Apply frozen cutoffs to later rows and measure actual FPR, recall and precision.',
+  'Capacity policies take the top-scoring transactions from a batch.',
+  'Use the same number of reviews for each model.'], { step: 0.84 });
+
+slide = page('Ranking metrics on the historical test');
+table(slide, ['Model', 'AP', 'PR AUC', 'ROC AUC', 'Fraud prevalence'],
+  testRanking.map((row) => [row.model, decimal(row.average_precision), decimal(row.pr_auc_trapezoidal),
+    decimal(row.roc_auc), percent(row.base_rate, 3)]), [3.05, 1.75, 1.95, 2.15, 2.9]);
+lines(slide, ['The GMM places fraud earlier in the queue.',
+  'The autoencoder has higher ROC AUC and substantially lower AP.'], { y: 3.8 });
+
+slide = page('Precision–recall curves');
+text(slide, 'Frozen scores on validation and on the previously inspected test split.',
+  0.75, 1.62, 11.65, 0.39, { fontSize: 18 });
+await chartImage(slide, 'precision_recall.png', 0.85, 2.18, 11.55, 4.57);
+
+slide = page('Historical recall and false alerts by budget');
+const names = ['GMM', 'Autoencoder'];
+const budgetRows = ['0.001', '0.005', '0.01', '0.05'].map((budget) => [
+  percent(budget), ...names.flatMap((model) => {
+    const row = subset(testOperating.filter((entry) => entry.fpr_budget === budget), model);
+    return [percent(row.recall), row.fp, percent(row.fpr, 3)];
+  }),
+]);
+table(slide, ['Validation FPR', 'GMM recall', 'GMM FP', 'GMM FPR', 'AE recall', 'AE FP', 'AE FPR'],
+  budgetRows, [2.12, 1.63, 1.51, 1.63, 1.65, 1.49, 1.77], 1.72, 15);
+lines(slide, ['At 5%, both catch 60 frauds and each sends more than 2,000 false alerts.'],
+  { y: 4.81, fontSize: 19 });
+
+slide = page('Fraud caught at equal workload');
+const workloadRows = ['56', '100', '284', '569'].map((k) => [
+  k, ...names.flatMap((model) => {
+    const row = subset(testCapacity.filter((entry) => entry.k === k), model);
+    return [row.tp, percent(row.precision_at_k, 2)];
+  }),
+]);
+table(slide, ['Reviews', 'GMM frauds', 'GMM precision', 'AE frauds', 'AE precision'],
+  workloadRows, [2.15, 2.2, 2.65, 2.15, 2.65]);
+lines(slide, ['With 284 reviews, GMM catches 57 of 75 frauds. The autoencoder catches 33.'],
+  { y: 4.81, fontSize: 19 });
+
+slide = page('Ablations on mixed validation');
+table(slide, ['Bottleneck', 'Input noise SD', 'Mean AP', 'Across-seed SD', 'Mean recall'],
+  ablation.map((row) => [row.width, Number(row.noise_std).toFixed(2), decimal(row.mean_ap),
+    decimal(row.sd_ap), percent(row.mean_recall)]), [2.15, 2.6, 2.1, 2.55, 2.4], 1.72, 16);
+lines(slide, ['Three seeds per row. Recall is measured at a 0.5% validation FPR budget.',
+  'Width 16 leads the tested autoencoders. Frozen GMM validation AP is 0.6299.'],
+  { y: 4.78, step: 0.56, fontSize: 18 });
+
+slide = page('Reconstruction learning curves');
+await chartImage(slide, 'training_curves.png', 0.7, 1.62, 8.2, 5.18);
+lines(slide, ['Clean reserve MSE selects each checkpoint.',
+  'The dashed line shows the training objective for seed 26.',
+  'Each model has up to 35 epochs.'],
+  { x: 9.12, y: 2.05, w: 3.4, step: 1.18, fontSize: 17 });
+
+slide = page('Findings and holdout status');
+lines(slide, ['GMM led the historical comparison by AP and at equal review capacity.',
+  'Width 16 led the tested neural variants on mixed validation.',
+  'An unseen batch with compatible features is still needed to confirm the results.'],
+  { step: 0.94 });
+
+const packageZip = await JSZip.loadAsync(await pptx.write({ outputType: 'nodebuffer' }));
+const manifestName = '[Content_Types].xml';
+const manifest = await packageZip.file(manifestName).async('string');
+// Some PptxGenJS releases declare a master for each slide while emitting a single master.
+const masterOverride = /<Override\s+PartName="\/(ppt\/slideMasters\/slideMaster\d+\.xml)"[^>]*\/>/g;
+packageZip.file(manifestName, manifest.replace(masterOverride, (entry, part) => packageZip.file(part) ? entry : ''));
+await fs.writeFile(destination, await packageZip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' }));

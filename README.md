@@ -114,3 +114,5 @@ The [Phase 1 workflow](../../actions/workflows/phase1-checks.yml) runs unit/inte
 ## Phase 2 neural comparison
 
 See [Phase 2 reproducibility](docs/phase2/README.md),the [IEEE-format report](reports/phase2_ieee/main.pdf), and the [presentation](docs/phase2/T085_Phase2.pptx). Run `python run_phase2.py` with the original Kaggle CSV to reproduce the denoising autoencoder comparison. The tested autoencoder reaches test AP 0.0908 versus the frozen GMM at 0.5822. This is a follow-up on an already inspected historical test set.
+
+The [executed Phase 2 triage notebook](notebooks/phase2/01_fraud_triage.ipynb) compares the frozen GMM and autoencoder scores at four false-positive budgets and matched review capacities. It also shows 12 validation-only autoencoder ablation runs. Use `python run_phase2_study.py --data /path/to/creditcard.csv` to regenerate the expanded evaluation with the original ULB/Kaggle CSV. The [Phase 2 study protocol](docs/phase2/README.md) documents both runners and the status of the untouched holdout.
