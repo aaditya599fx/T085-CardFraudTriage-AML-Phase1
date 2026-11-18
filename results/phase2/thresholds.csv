@@ -1,0 +1,3 @@
+model,threshold,threshold_hex,validation_fpr_budget
+autoencoder,8.468790054321289,0x1.0f00540000000p+3,0.005
+gmm,63.548622253312324,0x1.fc6394105eac9p+5,0.005

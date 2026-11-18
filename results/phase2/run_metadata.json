@@ -1,0 +1,18 @@
+{
+  "dataset_sha256": "76274b691b16a6c49d3f159c883398e03ccd6d1ee12d9d8ee38f4b4b98551a89",
+  "split_sha256": "3c069d647e251e07240bbedf3aab9276824c5f04a7e0199158ce902da61c2adc",
+  "seed": 26,
+  "train_legitimate_rows": 170528,
+  "architecture": [
+    29,
+    16,
+    8,
+    16,
+    29
+  ],
+  "noise_std": 0.05,
+  "epochs": 35,
+  "loss": 0.21516374921639475,
+  "test_reuse": "Historical test partition inspected in Phase 1; follow-up findings.",
+  "selection": "Early stopping on a legitimate-only training subset."
+}

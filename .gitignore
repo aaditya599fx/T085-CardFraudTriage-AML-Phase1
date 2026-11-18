@@ -14,3 +14,4 @@ results/models/*.joblib
 !data/processed/split_indices.npz
 *.log
 work-presentation-*/
+results/phase2/*.joblib

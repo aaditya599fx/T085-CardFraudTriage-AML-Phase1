@@ -110,3 +110,7 @@ Scope follows the faculty [Phase 1 instructions](https://docs.google.com/documen
 ### Automated public checks
 
 The [Phase 1 workflow](../../actions/workflows/phase1-checks.yml) runs unit/integration tests and checks the committed report, notebooks, presentation and provenance without the raw dataset. Full numerical reproduction uses the original Kaggle CSV locally.
+
+## Phase 2 neural comparison
+
+See [Phase 2 reproducibility](docs/phase2/README.md), the [IEEE-format report](reports/phase2_ieee/main.pdf), and the [presentation](docs/phase2/T085_Phase2.pptx). Run `python run_phase2.py` with the original Kaggle CSV to reproduce the denoising autoencoder comparison. The tested autoencoder reaches test AP 0.0908 versus the frozen GMM at 0.5822. This is a follow-up on an already inspected historical test set.

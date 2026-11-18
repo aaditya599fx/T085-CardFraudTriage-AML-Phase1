@@ -1,0 +1,37 @@
+\documentclass[conference]{IEEEtran}
+\usepackage[T1]{fontenc}
+\usepackage{mathptmx}
+\usepackage{amsmath,amssymb,graphicx,booktabs,url}
+\title{Card Fraud Triage via Gaussian Mixture Density and Autoencoder Reconstruction\\Phase 2: Neural Anomaly Detection}
+\author{\IEEEauthorblockN{Team T085}\IEEEauthorblockA{Section E, Project 26\\Rishihood University}}
+\begin{document}\maketitle
+\begin{abstract}
+We compare a denoising undercomplete neural autoencoder with the frozen Phase 1 Gaussian mixture model (GMM) on the original ULB/Kaggle card-fraud dataset. Both use the same chronological membership, 170,528 legitimate training transactions, 29 transformed features, validation-based false-positive thresholds, and 56,961 mixed test transactions. The neural model attains test average precision 0.0908, while the GMM attains 0.5822. At a 0.5\% validation false-positive budget, the autoencoder catches 27 of 75 frauds with 135 false alerts; the GMM catches 57 with 175 false alerts. The neural model's high ROC area does not translate into strong precision at rare-event review capacity. This historical test set was already inspected in Phase 1, so these results are follow-up findings, not a fresh independent holdout.
+\end{abstract}
+\begin{IEEEkeywords}card fraud, autoencoder, Gaussian mixture, anomaly detection, precision-recall\end{IEEEkeywords}
+\section{Introduction}
+Fraud review has limited capacity. Ranking unusual transactions is useful only if fraud appears early in that queue. The original dataset has 284,807 observations and 492 fraud labels; majority-class accuracy obscures missed fraud. Phase 1 established a legitimate-only GMM. Phase 2 tests whether nonlinear reconstruction improves anomaly ranking under the same split and review policies.
+\section{Related Work}
+Dempster, Laird and Rubin described expectation-maximization for latent-variable likelihood estimation~\cite{dempster}. Sakurada and Yairi studied anomaly detection via autoencoder reconstruction~\cite{sakurada}. We use the latter as a competing score, not as a calibrated fraud probability.
+\section{Data and Protocol}
+The original CSV has V1--V28, Time, Amount and Class. Frozen chronological partitions contain 170,888 training rows (170,528 legitimate), 56,958 validation rows (57 fraud) and 56,961 test rows (75 fraud). The input features are V1--V28 and $\log(1+\mathrm{Amount})$; a StandardScaler is fit on legitimate training rows alone. Time orders the split but is excluded from the input. Fraud labels do not fit either anomaly model. We verify the original CSV checksum and frozen row identities before training.
+\section{Models}
+\subsection{Frozen GMM reference}
+The Phase 1 selected model has 20 full-covariance components and uses negative log density as its anomaly score. We load its frozen validation and test score arrays, preserving source-row order, rather than retraining or selecting it with Phase 2 test outcomes.
+\subsection{Denoising undercomplete autoencoder}
+A feed-forward network maps 29 inputs through hidden widths 16, 8 and 16 to 29 outputs. The eight-unit bottleneck is undercomplete. We add independent zero-mean Gaussian input noise with standard deviation 0.05 and train against clean legitimate inputs. ReLU hidden units and an identity output are optimized by Adam in 512-row minibatches. The score is mean squared reconstruction error across 29 standardized features:
+\begin{equation}s(\mathbf x)=\frac{1}{29}\sum_{j=1}^{29}(x_j-\hat x_j)^2.\end{equation}
+The random seed is 26, maximum epochs 35, and early stopping reserves 10\% of the legitimate training population. The run reached the maximum epoch limit; therefore convergence is not claimed. No validation fraud labels select neural architecture or weights. The implemented model is a neural autoencoder via scikit-learn's MLPRegressor.
+\section{Evaluation}
+We report average precision (AP), trapezoidal PR area, ROC AUC, recall and precision at a frozen 0.5\% validation false-positive-rate budget, and precision at a top-0.5\% review capacity. Each method's threshold comes from legitimate validation scores with strict greater-than comparison. Test labels are consulted only for reporting. The test set was previously inspected, which limits confirmatory interpretation.
+\begin{table}[t]\centering\caption{Same-partition test performance}\begin{tabular}{lrrrr}\toprule Model&AP&PR area&ROC AUC&Top-0.5\% precision\\\midrule GMM&0.5822&0.5787&0.9187&0.2007\\ Autoencoder&0.0908&0.0885&0.9319&0.1162\\\bottomrule\end{tabular}\end{table}
+\begin{table}[t]\centering\caption{Frozen 0.5\% validation-FPR policy on test}\begin{tabular}{lrrrrr}\toprule Model&TP&FP&FN&Recall&Precision\\\midrule GMM&57&175&18&0.760&0.2457\\ Autoencoder&27&135&48&0.360&0.1667\\\bottomrule\end{tabular}\end{table}
+\begin{figure}[t]\centering\includegraphics[width=\columnwidth]{test_pr_curve.png}\caption{Test precision-recall curves for the frozen GMM and Phase 2 autoencoder. The dotted reference is test fraud prevalence.}\end{figure}
+\section{Discussion and Limitations}
+The autoencoder's test ROC AUC is 0.9319, but AP is only 0.0908. Under rare-event triage, false alerts still dominate much of the review queue. At the frozen threshold, the autoencoder produces 162 alerts, catching 27 frauds; the GMM produces 232 alerts, catching 57. At exactly 284 reviews, the autoencoder catches 33 frauds versus 57 for the GMM. A single architecture and noise setting were evaluated, so these observations do not establish that all autoencoders are inferior. The neural optimizer hit its epoch cap, and a larger tuning study would need a predetermined validation-only plan. Two days of anonymized transactions, only 75 test frauds, and historical test reuse constrain generalization. This study does not implement or claim a hybrid model.
+\section{Reproducibility}
+The executable \texttt{run\_phase2.py} verifies frozen membership and dataset checksum, fits preprocessing and the neural model only on legitimate training rows, records model configuration and CSV/NPZ metrics, and saves the PR figure. Raw CSV and serialized models are excluded from Git. The exact environment and package versions should be recorded for independent replication; the repository requirements constrain the major dependencies.
+\section{Conclusion}
+The tested undercomplete denoising autoencoder did not improve fraud triage over the frozen GMM on this historical split. AP, review capacity and false-alert counts reveal the gap more clearly than accuracy or ROC area alone.
+\begin{thebibliography}{2}\bibitem{dempster} A. P. Dempster, N. M. Laird, and D. B. Rubin, ``Maximum likelihood from incomplete data via the EM algorithm,'' \emph{J. Roy. Stat. Soc. B}, 1977.\bibitem{sakurada} M. Sakurada and T. Yairi, ``Anomaly detection using autoencoders with nonlinear dimensionality reduction,'' \emph{MLSDA}, 2014.\end{thebibliography}
+\end{document}
