@@ -1,0 +1,64 @@
+{
+  "dataset_sha256": "76274b691b16a6c49d3f159c883398e03ccd6d1ee12d9d8ee38f4b4b98551a89",
+  "historical_test_previously_inspected": true,
+  "ablation_mixed_split": "validation",
+  "validation_fpr_budgets": [
+    0.001,
+    0.005,
+    0.01,
+    0.05
+  ],
+  "capacity_fractions": [
+    0.001,
+    0.005,
+    0.01
+  ],
+  "ablation": {
+    "fit_legitimate_rows": 153474,
+    "stopping_legitimate_rows": 17054,
+    "fit_time_end": 100140.0,
+    "reserve_time_start": 100143.0,
+    "variants": {
+      "Denoising, width 8": [
+        8,
+        0.05
+      ],
+      "Clean, width 8": [
+        8,
+        0.0
+      ],
+      "Denoising, width 4": [
+        4,
+        0.05
+      ],
+      "Denoising, width 16": [
+        16,
+        0.05
+      ]
+    },
+    "seeds": [
+      13,
+      26,
+      42
+    ],
+    "max_epochs": 35,
+    "patience": 5,
+    "batch_size": 512
+  },
+  "inputs_sha256": {
+    "data/processed/split_indices.npz": "3c069d647e251e07240bbedf3aab9276824c5f04a7e0199158ce902da61c2adc",
+    "results/phase2/autoencoder_validation.npz": "790285c7c267221e168482bea100cd7e5efa3b0815342193bfcaa12f5aa79167",
+    "results/phase2/autoencoder_test.npz": "e868ebfefdb22ebbcba2abbac3642220a096a2d3d81cbc20d12d71c8daf5a44e",
+    "results/scores/gmm_validation.npz": "90d3284eb005da564969c99108ac46a3b696d7a0cfbb826c714312936aadbab1",
+    "results/scores/gmm_test.npz": "518bbac364d2a7ee44a8f440966ad05f49b429698158c174933ef82c98cc636b"
+  },
+  "ablation_runner_sha256": "cf9a007b8fe69f3ec7b2be1a7dcd7ce8ac4ed477590883be0a759ea1b3b396df",
+  "environment": {
+    "python": "3.12.14",
+    "numpy": "2.4.2",
+    "pandas": "2.3.3",
+    "scipy": "1.18.1",
+    "scikit_learn": "1.8.0",
+    "matplotlib": "3.11.2"
+  }
+}
