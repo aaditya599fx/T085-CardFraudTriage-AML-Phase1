@@ -22,3 +22,7 @@ Use `git log -- <file>` to inspect the history for each component. Generic uploa
 | | | | | |
 
 Public metadata uses role labels. Personal enrollment/email fields are not copied into this public submission.
+
+## Phase 2 repository evidence
+
+The initial autoencoder comparison was committed as `728996a` from Aaditya's account. Ansh subsequently committed the expanded Phase 2 evaluation and triage notebook in `5f8afa8`, and the validation-selected hybrid and fusion notebook in `88bf8bf`; merge commits `f00cb5e` and `79e9468` integrated those changes. See `docs/phase2/COMMIT_PLAN.md` for the current record and optional genuine follow-up work. Personal review evidence still belongs in the blank record above.

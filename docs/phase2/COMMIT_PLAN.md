@@ -1,12 +1,23 @@
-# Phase 2 contribution and commit plan
+# Phase 2 contribution record and future work
 
-The integrated Phase 2 experiment was implemented in this checkout. Git authorship must reflect actual work; teammates should review and contribute their own follow-up changes rather than splitting or rewriting this work under their names.
+This repository already contains the Phase 2 comparison, validation study, hybrid score, two executed notebooks, report and presentation. Do not split or relabel existing commits to create artificial contribution history.
 
-1. Gauri: review `run_phase2.py` data loading and `results/phase2/run_metadata.json`; commit any verified data/split corrections and a short data audit.
-2. Farhana: review the use of `src/features.py` and frozen scaler inputs; commit any tested preprocessing corrections and leakage analysis.
-3. Aaditya: review the frozen GMM score comparison in `run_phase2.py`; commit any validated baseline/protocol fixes.
-4. Bhumi: review the autoencoder architecture, fit and `results/phase2/metrics.csv`; commit tested neural/evaluation improvements with validation-only decisions.
-5. Anshvardhan: review `reports/phase2_ieee/main.tex`, the PR figure, error analysis and limitations; commit supported edits and figures.
-6. Aaditya as integrator: after actual team changes, rerun Phase 2, rebuild the IEEE PDF and PPTX/PDF, check the results and merge the reviewed branches. Do not attribute this initial integrated commit to teammates who did not make it.
+## Actual Phase 2 commits
 
-Suggested future commit messages: `docs(data): audit frozen Phase 2 membership`; `test(features): verify legitimate-only transform`; `fix(gmm): validate frozen score alignment`; `feat(autoencoder): improve validation-selected architecture`; `docs(phase2): expand error analysis`; `chore(integration): refresh Phase 2 deliverables`.
+| Commit | Recorded author | Work |
+|---|---|---|
+| `728996a` | Aaditya account | Initial undercomplete denoising autoencoder comparison, measured outputs, report and slides |
+| `5f8afa8` | Ansh | Expanded four-budget comparison, 12 validation-only ablations, executed triage notebook, report and slides |
+| `88bf8bf` | Ansh | Validation-selected hybrid score, executed fusion notebook, tests, report and slides |
+
+The merge commits `f00cb5e` and `79e9468` integrated Ansh's changes into main. These records document repository activity, not an assertion that anyone else wrote another person's work.
+
+## Optional genuine follow-up work
+
+- Gauri: audit the frozen data membership and provide a verified data note.
+- Farhana: review preprocessing fit scope and add a leakage check if a concrete gap exists.
+- Aaditya: review GMM score alignment and integration against the latest Phase 2 results.
+- Bhumi: independently review evaluation and any predeclared validation-only neural improvement.
+- Anshvardhan: maintain the hybrid and robustness interpretation, and clarify error cases.
+
+Each person should commit only changes they actually make. A new, genuinely unseen later-time dataset would be needed to close the independent-holdout limitation.
