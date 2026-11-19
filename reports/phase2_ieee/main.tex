@@ -2,14 +2,14 @@
 \usepackage[T1]{fontenc}
 \usepackage{mathptmx}
 \usepackage{amsmath,graphicx,booktabs,url}
-\graphicspath{{../../results/phase2/study/}}
+\graphicspath{{../../results/phase2/study/}{../../results/phase2/hybrid/}}
 \title{Card Fraud Triage via Gaussian Mixture Density and Autoencoder Reconstruction\\Phase 2: Neural Anomaly Detection}
 \author{\IEEEauthorblockN{Team T085}\IEEEauthorblockA{Section E, Project 26\\Rishihood University}}
 \begin{document}
 \maketitle
 
 \begin{abstract}
-We compare frozen Gaussian mixture (GMM) and denoising autoencoder scores on ULB/Kaggle card transactions. Historical test average precision is 0.5822 for GMM and 0.0908 for the autoencoder. At 284 reviews, they recover 57 and 33 of 75 frauds, respectively. We report four validation-calibrated false-positive budgets and run 12 controlled autoencoder ablations on the mixed validation partition. A 16-unit bottleneck leads the tested neural variants on mean validation average precision (0.0606). The historical test was previously inspected in Phase 1.
+We compare frozen Gaussian mixture (GMM) and denoising autoencoder scores on ULB/Kaggle card transactions. We report four validation-calibrated false-positive budgets and run 12 controlled autoencoder ablations. We also fuse the two model scores on a shared empirical tail scale. Mixed validation selects a 95\% GMM and 5\% autoencoder weighting. On the previously inspected historical test, the hybrid attains 0.5754 average precision, compared with 0.5822 for GMM and 0.0908 for the autoencoder. At 284 reviews, the hybrid matches the GMM at 57 of 75 frauds.
 \end{abstract}
 \begin{IEEEkeywords}
 card fraud, anomaly detection, autoencoder, Gaussian mixture, precision-recall
@@ -86,10 +86,41 @@ Width & Noise SD & Mean AP & SD of AP & Mean recall$^*$ \\
 
 At width 8 the mean AP difference with and without noise is small relative to seed variation. Width 16 has the highest mean AP of the variants tested. The frozen GMM reaches 0.6299 AP on the same mixed validation rows. The executed notebook includes the training objective and clean reserve reconstruction curves for the ablations.
 
-\section{Limitations and Reproducibility}
-The data cover two historical days and the PCA representation limits business-level explanations. The historical test partition was previously inspected. Confirmation requires unseen, compatible transactions and decisions frozen before scoring. The ablations used mixed validation only and their results are descriptive. The two frozen scores are evaluated independently throughout.
+\section{Hybrid Score Fusion}
+The GMM measures local density and the autoencoder measures nonlinear reconstruction. Their raw scores have different units and ranges. We use legitimate validation transactions to give both signals a common rarity scale. For model $j$ and raw score $s$, let $N_0$ be the number of legitimate validation rows and $n_j(s)$ be the number whose score is at least $s$. We compute
+\begin{equation}
+t_j(s)=-\log\left(\frac{1+n_j(s)}{N_0+1}\right).
+\end{equation}
+The smoothing keeps the score finite above the largest reference value and limits the extreme tail to the resolution supported by the sample. It can tie very extreme scores. The hybrid combines $t_{\mathrm{GMM}}$ and $t_{\mathrm{AE}}$ with weights $1-w$ and $w$. This gives an additional signal when a low-density point also reconstructs poorly. The weighted rarity score orders transactions for review.
 
-Run \texttt{run\_phase2\_study.py} with the original CSV to regenerate the study. It verifies split membership and records hashes, configuration and dependency versions. The notebook reads recorded outputs so reviewers can execute it without the raw CSV.
+Mixed-validation AP selects $w$ from $\{0.05,0.10,0.20,0.35,0.50\}$, preferring smaller $w$ on ties. We freeze the winning $w=0.05$ and calibrate one threshold per FPR budget using legitimate validation rows. Each standalone score serves as a component-removal baseline. All three scores use matching rows, FPR policies and review capacities.
+
+\begin{table}[t]\centering
+\caption{Hybrid and component-removal baselines}
+\label{tab:hybrid}
+\begin{tabular}{lrrr}
+\toprule
+Model & Validation AP & Historical AP & Fraud at 284 \\
+\midrule
+GMM & 0.6299 & 0.5822 & 57 \\
+Autoencoder & 0.0380 & 0.0908 & 33 \\
+Hybrid & 0.6327 & 0.5754 & 57 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]\centering
+\includegraphics[width=\columnwidth]{test_pr_hybrid.png}
+\caption{Hybrid and standalone precision-recall curves on the previously inspected historical test.}
+\label{fig:hybrid}
+\end{figure}
+
+The hybrid modestly raises validation AP. On the historical test, its AP is lower and its fraud counts at each tested review capacity match GMM. At the 1\% validation FPR budget, both catch 58 frauds and the hybrid produces 320 false alerts versus 324 for GMM. The descriptive 95\% interval for the paired historical AP difference on 300 class-stratified bootstrap samples is $[-0.0437,0.0443]$. The small workload difference does not establish a reliable advantage. The hybrid notebook provides all budgets, capacities and validation weights.
+
+\section{Limitations and Reproducibility}
+The data cover two historical days and the PCA representation limits business-level explanations. The historical test partition was previously inspected. Confirmation requires unseen, compatible transactions and decisions frozen before scoring. The ablations used mixed validation only. The bootstrap conditions on the class counts and fitted scores and does not model temporal dependence.
+
+Run \texttt{run\_phase2\_study.py} and \texttt{run\_phase2\_hybrid.py} with the original CSV to regenerate the studies. They verify split membership and record input hashes and configuration. Both notebooks read recorded outputs so reviewers can execute them without the raw CSV.
 
 \begin{thebibliography}{6}
 \bibitem{dempster} A. P. Dempster, N. M. Laird, and D. B. Rubin, Maximum likelihood from incomplete data via the EM algorithm, \emph{J. Roy. Stat. Soc. B}, vol. 39, no. 1, pp. 1--38, 1977.
