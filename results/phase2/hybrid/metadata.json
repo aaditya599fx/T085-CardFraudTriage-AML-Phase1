@@ -1,0 +1,22 @@
+{
+  "ae_weight": 0.05,
+  "gmm_weight": 0.95,
+  "weight_selection": "Maximize mixed-validation AP, prefer lower AE weight on ties.",
+  "standalone_policy": "Evaluate the original GMM and autoencoder scores as component-removal baselines.",
+  "calibration": "Smoothed empirical upper tails from legitimate validation scores only.",
+  "historical_test_previously_inspected": true,
+  "historical_paired_ap_difference_ci": {
+    "replicates": 300,
+    "seed": 26,
+    "lower": -0.043657297200031926,
+    "upper": 0.04429069421672492
+  },
+  "dataset_sha256": "76274b691b16a6c49d3f159c883398e03ccd6d1ee12d9d8ee38f4b4b98551a89",
+  "inputs_sha256": {
+    "data/processed/split_indices.npz": "3c069d647e251e07240bbedf3aab9276824c5f04a7e0199158ce902da61c2adc",
+    "results/scores/gmm_validation.npz": "90d3284eb005da564969c99108ac46a3b696d7a0cfbb826c714312936aadbab1",
+    "results/scores/gmm_test.npz": "518bbac364d2a7ee44a8f440966ad05f49b429698158c174933ef82c98cc636b",
+    "results/phase2/autoencoder_validation.npz": "790285c7c267221e168482bea100cd7e5efa3b0815342193bfcaa12f5aa79167",
+    "results/phase2/autoencoder_test.npz": "e868ebfefdb22ebbcba2abbac3642220a096a2d3d81cbc20d12d71c8daf5a44e"
+  }
+}

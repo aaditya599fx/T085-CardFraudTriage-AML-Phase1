@@ -8,10 +8,11 @@ const PptxGenJS = require('pptxgenjs');
 const JSZip = require('jszip');
 const root = fileURLToPath(new URL('../', import.meta.url));
 const study = path.join(root, 'results/phase2/study');
+const hybrid = path.join(root, 'results/phase2/hybrid');
 const destination = process.argv[2] ?? path.join(root, 'docs/phase2/T085_Phase2.pptx');
 
-async function records(file) {
-  const text = (await fs.readFile(path.join(study, file), 'utf8')).trim();
+async function records(file, folder = study) {
+  const text = (await fs.readFile(path.join(folder, file), 'utf8')).trim();
   const [header, ...lines] = text.split(/\r?\n/);
   const keys = header.split(',');
   return lines.map((line) => {
@@ -21,9 +22,11 @@ async function records(file) {
   });
 }
 
-const [ranking, operating, capacity, ablation] = await Promise.all([
+const [ranking, operating, capacity, ablation, hybridRanking, hybridCapacity, hybridOperating, hybridMeta] = await Promise.all([
   records('ranking.csv'), records('operating_points.csv'),
   records('capacity.csv'), records('ablation_summary.csv'),
+  records('ranking.csv', hybrid), records('capacity.csv', hybrid), records('operating_points.csv', hybrid),
+  fs.readFile(path.join(hybrid, 'metadata.json'), 'utf8').then(JSON.parse),
 ]);
 
 const pptx = new PptxGenJS();
@@ -183,11 +186,38 @@ lines(slide, ['Clean reserve MSE selects each checkpoint.',
   'Each model has up to 35 epochs.'],
   { x: 9.12, y: 2.05, w: 3.4, step: 1.18, fontSize: 17 });
 
+slide = page('Hybrid score fusion');
+text(slide, 'GMM density and autoencoder reconstruction', 0.75, 1.76, 11.8, 0.55,
+  { fontSize: 27, bold: true });
+lines(slide, ['Map both raw scores to rarity using legitimate validation transactions.',
+  'Compare five autoencoder weights using mixed-validation AP.',
+  'Freeze the selected weights and calibrate thresholds before evaluating the historical test.'],
+  { y: 2.55, step: 0.78, fontSize: 20 });
+text(slide, `Selected mixture  ${percent(hybridMeta.gmm_weight, 0)} GMM and ${percent(hybridMeta.ae_weight, 0)} autoencoder`,
+  0.75, 5.35, 11.8, 0.55, { bold: true, color: colors.accent });
+
+slide = page('Hybrid and standalone results');
+const hybridRows = ['GMM', 'Autoencoder', 'Hybrid'].map((model) => {
+  const validation = subset(hybridRanking.filter((row) => row.split === 'validation'), model);
+  const test = subset(hybridRanking.filter((row) => row.split === 'test'), model);
+  const queue = subset(hybridCapacity.filter((row) => row.split === 'test' && row.k === '284'), model);
+  return [model, decimal(validation.average_precision), decimal(test.average_precision), queue.tp];
+});
+table(slide, ['Model', 'Validation AP', 'Historical test AP', 'Frauds at 284 reviews'], hybridRows,
+  [2.95, 2.45, 2.95, 3.45]);
+const onePercent = hybridOperating.filter((row) => row.split === 'test' && row.fpr_budget === '0.01');
+const hybridPoint = subset(onePercent, 'Hybrid');
+const gmmPoint = subset(onePercent, 'GMM');
+lines(slide, [`At the 1% validation FPR budget, both catch ${hybridPoint.tp} frauds.`,
+  `Hybrid produces ${hybridPoint.fp} false alerts. GMM produces ${gmmPoint.fp}.`,
+  'The historical comparison shows similar workload and lower hybrid AP.'],
+  { y: 4.23, step: 0.53, fontSize: 18 });
+
 slide = page('Findings and holdout status');
-lines(slide, ['GMM led the historical comparison by AP and at equal review capacity.',
+lines(slide, ['GMM led the historical comparison by AP. The hybrid matched its fixed-capacity counts.',
   'Width 16 led the tested neural variants on mixed validation.',
   'An unseen batch with compatible features is still needed to confirm the results.'],
-  { step: 0.94 });
+  { step: 0.94, fontSize: 21 });
 
 const packageZip = await JSZip.loadAsync(await pptx.write({ outputType: 'nodebuffer' }));
 const manifestName = '[Content_Types].xml';
